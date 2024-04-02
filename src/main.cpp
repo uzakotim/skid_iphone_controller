@@ -31,7 +31,7 @@ std::string ROG{"192.168.1.151"};
 std::mutex lock;
 std::mutex lock_cur;
 static std::atomic<bool> stop_threads;
-static std::atomic<bool> prod;
+static std::atomic<bool> prod, is_carpet;
 unsigned char cur, prev, stored;
 int speed = 0;
 
@@ -50,10 +50,20 @@ struct Configuration
     std::string SENSORS_PORT;
     std::string MOTORS_PORT;
     int WIFI_PORT;
+    bool IS_CARPET;
     // Add more parameters as needed
 };
-std::pair<int, int> key_to_speeds(char key, int speed, int speed_rot)
+std::pair<int, int> key_to_speeds(char key, int speed)
 {
+    int speed_rot = 0;
+    if (is_carpet)
+    {
+        speed_rot = speed + 50;
+    }
+    else
+    {
+        speed_rot = speed + 10;
+    }
     std::map<char, std::pair<int, int>> switch_map = {
         {'w', {speed, speed}},
         {'s', {-speed, -speed}},
@@ -125,6 +135,21 @@ bool loadConfiguration(const std::string &filename, Configuration &config)
         {
             iss >> config.WIFI_PORT;
         }
+        if (counter == 7)
+        {
+            try
+            {
+                std::string value;
+                iss >> value;
+                config.IS_CARPET = stringToBool(value);
+                is_carpet = config.IS_CARPET;
+            }
+            catch (const std::invalid_argument &e)
+            {
+                std::cerr << e.what() << std::endl;
+                return false;
+            }
+        }
         // If you have more parameters, parse them here as well
 
         counter++;
@@ -142,7 +167,7 @@ void commander(const int &id, const std::string &name, const int &speed_translat
     {
         if (prod)
         {
-            std::pair<int, int> speeds = key_to_speeds(cur, speed_translation, speed_rotation);
+            std::pair<int, int> speeds = key_to_speeds(cur, speed);
             on_press_vel(speeds.first, speeds.second, ser_motors);
         }
         std::this_thread::sleep_for(std::chrono::milliseconds(delay));
@@ -242,9 +267,12 @@ void sensor_thread(const int &id, const std::string &name, const int &delay)
         }
         if (isFalling)
         {
+            lock_cur.lock();
             cur = 'k';
+            speed = 0;
             prev = stored;
             stored = cur;
+            lock_cur.unlock();
             std::cout << FRED("Falling!\n");
         }
         std::this_thread::sleep_for(std::chrono::milliseconds(delay));
@@ -282,11 +310,10 @@ int main(int argc, char **argv)
         }
     }
 
-    std::cout << FYEL("Press \"r\" to end controller\n");
     // std::thread ip1(input_thread, 1, "keyboard input", config.SPEED, config.SPEED_ROT, frequency_to_milliseconds(10));
     std::thread wf1(wifi_thread, 1, "wifi input", config.WIFI_PORT, frequency_to_milliseconds(100));
-    // std::thread cmd(commander, 2, "command thread", config.SPEED, config.SPEED_ROT, frequency_to_milliseconds(10));
-    // std::thread th1(sensor_thread, 3, "sensor thread", frequency_to_milliseconds(10));
+    std::thread cmd(commander, 2, "command thread", config.SPEED, config.SPEED_ROT, frequency_to_milliseconds(100));
+    std::thread th1(sensor_thread, 3, "sensor thread", frequency_to_milliseconds(10));
     cur = 'k';
     prev = 'k';
     stored = 'k';
