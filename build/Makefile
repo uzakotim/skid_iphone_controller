@@ -57,10 +57,10 @@ RM = /opt/homebrew/Cellar/cmake/3.28.3/bin/cmake -E rm -f
 EQUALS = =
 
 # The top-level source directory on which CMake was run.
-CMAKE_SOURCE_DIR = /Users/uzakotim/git/skid_car_controller
+CMAKE_SOURCE_DIR = /Users/uzakotim/git/skid_iphone_controller
 
 # The top-level build directory on which CMake was run.
-CMAKE_BINARY_DIR = /Users/uzakotim/git/skid_car_controller/build
+CMAKE_BINARY_DIR = /Users/uzakotim/git/skid_iphone_controller/build
 
 #=============================================================================
 # Targets provided globally by CMake.
@@ -87,9 +87,9 @@ rebuild_cache/fast: rebuild_cache
 
 # The main all target
 all: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /Users/uzakotim/git/skid_car_controller/build/CMakeFiles /Users/uzakotim/git/skid_car_controller/build//CMakeFiles/progress.marks
+	$(CMAKE_COMMAND) -E cmake_progress_start /Users/uzakotim/git/skid_iphone_controller/build/CMakeFiles /Users/uzakotim/git/skid_iphone_controller/build//CMakeFiles/progress.marks
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 all
-	$(CMAKE_COMMAND) -E cmake_progress_start /Users/uzakotim/git/skid_car_controller/build/CMakeFiles 0
+	$(CMAKE_COMMAND) -E cmake_progress_start /Users/uzakotim/git/skid_iphone_controller/build/CMakeFiles 0
 .PHONY : all
 
 # The main clean target

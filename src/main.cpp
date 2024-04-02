@@ -29,6 +29,7 @@ std::string MAC{"192.168.1.152"};
 std::string ROG{"192.168.1.151"};
 
 std::mutex lock;
+std::mutex lock_cur;
 static std::atomic<bool> stop_threads;
 static std::atomic<bool> prod;
 unsigned char cur, prev, stored;
@@ -47,6 +48,7 @@ struct Configuration
     bool PROD;
     std::string SENSORS_PORT;
     std::string MOTORS_PORT;
+    int WIFI_PORT;
     // Add more parameters as needed
 };
 std::pair<int, int> key_to_speeds(char key, int speed, int speed_rot)
@@ -118,6 +120,10 @@ bool loadConfiguration(const std::string &filename, Configuration &config)
         {
             iss >> config.MOTORS_PORT;
         }
+        if (counter == 6)
+        {
+            iss >> config.WIFI_PORT;
+        }
         // If you have more parameters, parse them here as well
 
         counter++;
@@ -187,6 +193,26 @@ void input_thread(const int &id, const std::string &name, const int &speed, cons
     send_closing_message(id, name, lock);
     return;
 }
+void wifi_thread(const int &id, const std::string &name, const int &port, const int &delay)
+{
+    init_function(id, name, lock);
+    int sock = init_socket();
+    struct sockaddr_in myAddr = init_address(port, nullptr);
+    bind_socket(sock, myAddr);
+    char *buffer = new char[BUFFER_SIZE];
+    struct sockaddr_in srcAddr;
+    socklen_t srcAddrLen = sizeof(srcAddr);
+
+    while (!stop_threads)
+    {
+        msg_data msg = receive_message(sock, stop_threads, buffer, srcAddr, srcAddrLen);
+        if (stop_threads == true)
+            break;
+        print_buffer(msg.buffer, msg.srcAddr, msg.numBytesReceived, lock);
+        std::this_thread::sleep_for(std::chrono::milliseconds(delay));
+    }
+    send_closing_message(id, name, lock);
+}
 
 void sensor_thread(const int &id, const std::string &name, const int &delay)
 {
@@ -246,16 +272,18 @@ int main(int argc, char **argv)
             std::cout << FRED("Error: Could not open serial port: ") << FYEL(<< port_sensors <<) << FRED("") << std::endl;
         }
     }
+
     std::cout << FYEL("Press \"r\" to end controller\n");
-    std::thread ip1(input_thread, 1, "keyboard input", config.SPEED, config.SPEED_ROT, frequency_to_milliseconds(10));
-    std::thread cmd(commander, 2, "command thread", config.SPEED, config.SPEED_ROT, frequency_to_milliseconds(10));
-    std::thread th1(sensor_thread, 3, "sensor thread", frequency_to_milliseconds(10));
+    // std::thread ip1(input_thread, 1, "keyboard input", config.SPEED, config.SPEED_ROT, frequency_to_milliseconds(10));
+    std::thread wf1(wifi_thread, 1, "wifi input", config.WIFI_PORT, frequency_to_milliseconds(100));
+    // std::thread cmd(commander, 2, "command thread", config.SPEED, config.SPEED_ROT, frequency_to_milliseconds(10));
+    // std::thread th1(sensor_thread, 3, "sensor thread", frequency_to_milliseconds(10));
     cur = 'k';
     prev = 'k';
     stored = 'k';
 
-    ip1.join();
-    cmd.join();
-    th1.join();
+    wf1.join();
+    // cmd.join();
+    // th1.join();
     return 0;
 }

@@ -203,5 +203,100 @@ void on_press_vel(const int left_speed, const int right_speed, std::fstream &ser
     ser_motors << std::to_string(left_speed) << ' ' << std::to_string(right_speed) << '\n';
     ser_motors.flush();
 }
+// SOCKET FUNCTIONS ------------------------------------------------------------
+#define BUFFER_SIZE 4096
 
+struct msg_data
+{
+    ssize_t numBytesReceived;
+    struct sockaddr_in srcAddr;
+    char *buffer;
+};
+int init_socket()
+{
+    int sock = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
+    if (sock == -1)
+    {
+        std::cerr << "socket creation failed\n";
+        return 1;
+    }
+    // Setting to non-blocking
+
+    int flags = fcntl(sock, F_GETFL, 0);
+    fcntl(sock, F_SETFL, flags | O_NONBLOCK);
+
+    int broadcastEnable = 1;
+    if (setsockopt(sock, SOL_SOCKET, SO_BROADCAST,
+                   &broadcastEnable, sizeof(broadcastEnable)) == -1)
+    {
+        std::cerr << "setsockopt failed\n";
+        close(sock);
+        return 1;
+    }
+    return sock;
+}
+struct sockaddr_in init_address(const int &port, const char *address)
+{
+    struct sockaddr_in destAddr;
+    std::memset(&destAddr, 0, sizeof(destAddr));
+    destAddr.sin_family = AF_INET;
+    destAddr.sin_port = htons(port); // topic
+    destAddr.sin_addr.s_addr = address ? inet_addr(address) : INADDR_ANY;
+    return destAddr;
+}
+void send_message(int sock, const char *message, const struct sockaddr_in &destAddr)
+{
+    ssize_t numBytesSent = sendto(sock, message, std::strlen(message), 0,
+                                  (struct sockaddr *)&destAddr, sizeof(destAddr));
+    if (numBytesSent == -1)
+    {
+        std::cerr << FRED("sendto failed\n");
+        close(sock);
+        return;
+    }
+}
+
+msg_data receive_message(const int &sock, const bool &stop_threads, char *buffer, const struct sockaddr_in &srcAddr, socklen_t &srcAddrLen)
+{
+    msg_data data;
+    ssize_t numBytesReceived = recvfrom(sock, buffer, BUFFER_SIZE, MSG_WAITALL,
+                                        (struct sockaddr *)&srcAddr, &srcAddrLen);
+
+    while (numBytesReceived < 0 && !stop_threads)
+    {
+        if (errno == EAGAIN || errno == EWOULDBLOCK)
+        {
+            usleep(1);
+            numBytesReceived = recvfrom(sock, buffer, BUFFER_SIZE, MSG_WAITALL,
+                                        (struct sockaddr *)&srcAddr, &srcAddrLen);
+        }
+        else
+        {
+            std::cerr << "Error receiving data: " << strerror(errno) << "\n";
+            break;
+        }
+    }
+    data.numBytesReceived = numBytesReceived;
+    data.srcAddr = srcAddr;
+    data.buffer = buffer;
+    return data;
+}
+void bind_socket(const int &sock, const struct sockaddr_in &myAddr)
+{
+    if (bind(sock, (struct sockaddr *)&myAddr, sizeof(myAddr)) == -1)
+    {
+        std::cerr << "bind failed\n";
+        close(sock);
+        return;
+    }
+}
+void print_buffer(const char *msg_buffer, const struct sockaddr_in &srcAddr, const ssize_t &numBytesReceived, std::mutex &lock)
+{
+    lock.lock();
+    std::cout << "Received " << numBytesReceived << " bytes from "
+              << inet_ntoa(srcAddr.sin_addr) << ": " << msg_buffer << "\n";
+    std::cout.flush();
+    lock.unlock();
+}
+// [END] SOCKET FUNCTIONS ------------------------------------------------------
 #endif

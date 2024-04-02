@@ -10,3 +10,5 @@
 /dev/ttyUSB0
 # MOTORS_PORT
 /dev/ttyACM0
+# WIFI_PORT
+8080

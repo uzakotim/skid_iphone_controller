@@ -1,3 +1,3 @@
-/Users/uzakotim/git/skid_car_controller/build/CMakeFiles/run_me.dir
-/Users/uzakotim/git/skid_car_controller/build/CMakeFiles/edit_cache.dir
-/Users/uzakotim/git/skid_car_controller/build/CMakeFiles/rebuild_cache.dir
+/Users/uzakotim/git/skid_iphone_controller/build/CMakeFiles/run_me.dir
+/Users/uzakotim/git/skid_iphone_controller/build/CMakeFiles/edit_cache.dir
+/Users/uzakotim/git/skid_iphone_controller/build/CMakeFiles/rebuild_cache.dir
