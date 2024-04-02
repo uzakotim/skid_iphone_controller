@@ -26,12 +26,14 @@
 #include <chrono>
 #include <ctime>
 #include <cmath>
+#include <cstring>
 #include <cstdlib>
 #include <errno.h>
 #include <fcntl.h>
 #include <fstream>
 #include <iostream>
 #include <mutex>
+#include <math.h>
 #include <map>
 #include <termios.h>
 #include <thread>
