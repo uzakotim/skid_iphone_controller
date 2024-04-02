@@ -209,6 +209,8 @@ void wifi_thread(const int &id, const std::string &name, const int &port, const 
         if (stop_threads == true)
             break;
         print_buffer(msg.buffer, msg.srcAddr, msg.numBytesReceived, lock);
+        // clear buffer
+        memset(buffer, 0, BUFFER_SIZE);
         std::this_thread::sleep_for(std::chrono::milliseconds(delay));
     }
     send_closing_message(id, name, lock);
