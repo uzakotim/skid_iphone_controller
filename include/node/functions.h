@@ -290,11 +290,11 @@ void bind_socket(const int &sock, const struct sockaddr_in &myAddr)
         return;
     }
 }
-void print_buffer(const char *msg_buffer, const struct sockaddr_in &srcAddr, const ssize_t &numBytesReceived, std::mutex &lock)
+void print_buffer(const char *msg_buffer, const struct sockaddr_in &srcAddr, const ssize_t &numBytesReceived, const char &cur, const int &speed, std::mutex &lock)
 {
     lock.lock();
     std::cout << "Received " << numBytesReceived << " bytes from "
-              << inet_ntoa(srcAddr.sin_addr) << ": " << msg_buffer << "\n";
+              << inet_ntoa(srcAddr.sin_addr) << ": " << cur << " " << speed << "\n";
     std::cout.flush();
     lock.unlock();
 }
