@@ -319,7 +319,7 @@ int main(int argc, char **argv)
     stored = 'k';
 
     wf1.join();
-    // cmd.join();
-    // th1.join();
+    cmd.join();
+    th1.join();
     return 0;
 }
