@@ -67,10 +67,10 @@ std::pair<int, int> key_to_speeds(char key, int speed)
     std::map<char, std::pair<int, int>> switch_map = {
         {'w', {speed, speed}},
         {'s', {-speed, -speed}},
-        {'q', {speed_rot, 0}},
-        {'e', {0, speed_rot}},
-        {'a', {-speed_rot, 0}},
-        {'d', {0, -speed_rot}},
+        {'q', {0, speed_rot}},
+        {'e', {speed_rot, 0}},
+        {'a', {0, -speed_rot}},
+        {'d', {-speed_rot, 0}},
         {'r', {0, 0}}};
     return switch_map.count(key) ? switch_map.at(key) : std::make_pair(0, 0);
 }
