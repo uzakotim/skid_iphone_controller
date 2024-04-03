@@ -25,15 +25,13 @@
 #include "../include/node/functions.h"
 #include "../include/node/kalman.h"
 
-std::string MAC{"192.168.1.152"};
-std::string ROG{"192.168.1.151"};
-
 std::mutex lock;
 std::mutex lock_cur;
 static std::atomic<bool> stop_threads;
 static std::atomic<bool> prod, is_carpet;
 unsigned char cur, prev, stored;
 int speed = 0;
+std::string my_ip;
 
 std::fstream ser_motors;
 std::fstream ser_sensors;
@@ -51,6 +49,7 @@ struct Configuration
     std::string MOTORS_PORT;
     int WIFI_PORT;
     bool IS_CARPET;
+    std::string STATIC_IP;
     // Add more parameters as needed
 };
 std::pair<int, int> key_to_speeds(char key, int speed)
@@ -150,6 +149,10 @@ bool loadConfiguration(const std::string &filename, Configuration &config)
                 return false;
             }
         }
+        if (counter == 8)
+        {
+            iss >> config.STATIC_IP;
+        }
         // If you have more parameters, parse them here as well
 
         counter++;
@@ -223,7 +226,7 @@ void wifi_thread(const int &id, const std::string &name, const int &port, const 
 {
     init_function(id, name, lock);
     int sock = init_socket();
-    struct sockaddr_in myAddr = init_address(port, nullptr);
+    struct sockaddr_in myAddr = init_address(port, my_ip.c_str());
     bind_socket(sock, myAddr);
     char *buffer = new char[BUFFER_SIZE];
     struct sockaddr_in srcAddr;
@@ -298,6 +301,7 @@ int main(int argc, char **argv)
         port_motors = config.MOTORS_PORT;
         ser_motors = std::fstream(port_motors);
         ser_sensors = std::fstream(port_sensors);
+        my_ip = config.STATIC_IP;
         // Check if ser_motors is open
         if (!ser_motors.is_open())
         {

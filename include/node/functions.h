@@ -224,7 +224,6 @@ int init_socket()
 
     int flags = fcntl(sock, F_GETFL, 0);
     fcntl(sock, F_SETFL, flags | O_NONBLOCK);
-    setsockopt(sock, SOL_SOCKET, SO_REUSEADDR, &flags, sizeof(flags));
     int broadcastEnable = 1;
     if (setsockopt(sock, SOL_SOCKET, SO_BROADCAST,
                    &broadcastEnable, sizeof(broadcastEnable)) == -1)
