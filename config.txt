@@ -7,9 +7,9 @@
 # PROD
 1
 # SENSORS_PORT
-/dev/ttyUSB0
+/dev/ttyUSB1
 # MOTORS_PORT
-/dev/ttyACM0
+/dev/ttyUSB0
 # WIFI_PORT
 8080
 # IS_CARPET
