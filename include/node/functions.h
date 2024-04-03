@@ -224,15 +224,14 @@ int init_socket()
 
     int flags = fcntl(sock, F_GETFL, 0);
     fcntl(sock, F_SETFL, flags | O_NONBLOCK);
-
-    int broadcastEnable = 1;
-    if (setsockopt(sock, SOL_SOCKET, SO_BROADCAST,
-                   &broadcastEnable, sizeof(broadcastEnable)) == -1)
-    {
-        std::cerr << "setsockopt failed\n";
-        close(sock);
-        return 1;
-    }
+    // int broadcastEnable = 1;
+    // if (setsockopt(sock, SOL_SOCKET, SO_BROADCAST,
+    //                &broadcastEnable, sizeof(broadcastEnable)) == -1)
+    // {
+    //     std::cerr << "setsockopt failed\n";
+    //     close(sock);
+    //     return 1;
+    // }
     return sock;
 }
 struct sockaddr_in init_address(const int &port, const char *address)
