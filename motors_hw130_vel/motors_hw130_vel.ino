@@ -46,9 +46,9 @@ void loop()
 void executeCommand(int left_speed, int right_speed)
 {
   // motor 4 forward = forward right
-  // motor 3 forward = forward right
+  // motor 3 forward = backward right
   // motor 2 forward = forward left
-  // motor 1 forward = forward left
+  // motor 1 forward = backward left
 
   if (left_speed == right_speed)
   {
@@ -163,43 +163,27 @@ void executeCommand(int left_speed, int right_speed)
 }
 
 // Code dependent functions on robot version
-void moveMotorsForward()
-{
-  motor1.run(FORWARD);
-  motor2.run(FORWARD);
-  motor3.run(FORWARD);
-  motor4.run(FORWARD);
-}
-
-void moveMotorsBackward()
-{
-  motor1.run(BACKWARD);
-  motor2.run(BACKWARD);
-  motor3.run(BACKWARD);
-  motor4.run(BACKWARD);
-}
-
 void moveMotorLeftForward()
 {
-  motor1.run(FORWARD);
+  motor1.run(BACKWARD);
   motor2.run(FORWARD);
 }
 
 void moveMotorRightForward()
 {
-  motor3.run(FORWARD);
+  motor3.run(BACKWARD);
   motor4.run(FORWARD);
 }
 
 void moveMotorLeftBackward()
 {
-  motor1.run(BACKWARD);
+  motor1.run(FORWARD);
   motor2.run(BACKWARD);
 }
 
 void moveMotorRightBackward()
 {
-  motor3.run(BACKWARD);
+  motor3.run(FORWARD);
   motor4.run(BACKWARD);
 }
 
