@@ -259,7 +259,6 @@ void sensor_thread(const int &id, const std::string &name, const int &delay)
             // READ CHAR
             char c;
             read(ser_sensors, buffer(&c, 1));
-            isFalling = c == '1';
             std::cout << c << std::endl;
             std::this_thread::sleep_for(std::chrono::milliseconds(delay));
         }
