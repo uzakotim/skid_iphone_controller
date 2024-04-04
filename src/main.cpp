@@ -31,6 +31,7 @@ static std::atomic<bool> stop_threads;
 static std::atomic<bool> prod, is_carpet;
 unsigned char cur, prev, stored;
 int speed = 0;
+int isFalling = 0;
 
 std::fstream ser_motors;
 std::fstream ser_sensors;
@@ -220,16 +221,18 @@ void wifi_thread(const int &id, const std::string &name, const int &port, const 
         msg_data msg = receive_message(sock, stop_threads, buffer, srcAddr, srcAddrLen);
         if (stop_threads == true)
             break;
-
-        lock_cur.lock();
-        cur = msg.buffer[0];
-        speed = std::stoi(std::string(msg.buffer + 2, msg.numBytesReceived - 1));
-        prev = stored;
-        stored = cur;
-        lock_cur.unlock();
-        print_buffer(msg.buffer, msg.srcAddr, msg.numBytesReceived, cur, speed, lock);
-        // clear buffer
-        memset(buffer, 0, BUFFER_SIZE);
+        if (!isFalling)
+        {
+            lock_cur.lock();
+            cur = msg.buffer[0];
+            speed = std::stoi(std::string(msg.buffer + 2, msg.numBytesReceived - 1));
+            prev = stored;
+            stored = cur;
+            lock_cur.unlock();
+            print_buffer(msg.buffer, msg.srcAddr, msg.numBytesReceived, cur, speed, lock);
+            // clear buffer
+            memset(buffer, 0, BUFFER_SIZE);
+        }
         std::this_thread::sleep_for(std::chrono::milliseconds(delay));
     }
     send_closing_message(id, name, lock);
@@ -238,8 +241,6 @@ void wifi_thread(const int &id, const std::string &name, const int &port, const 
 void sensor_thread(const int &id, const std::string &name, const int &delay)
 {
     init_function(id, name, lock);
-
-    int isFalling = 0;
 
     while (!stop_threads)
     {
@@ -300,7 +301,7 @@ int main(int argc, char **argv)
     // std::thread ip1(input_thread, 1, "keyboard input", config.SPEED, config.SPEED_ROT, frequency_to_milliseconds(10));
     std::thread wf1(wifi_thread, 1, "wifi input", config.WIFI_PORT, frequency_to_milliseconds(100));
     std::thread cmd(commander, 2, "command thread", frequency_to_milliseconds(100));
-    std::thread th1(sensor_thread, 3, "sensor thread", frequency_to_milliseconds(10));
+    std::thread th1(sensor_thread, 3, "sensor thread", frequency_to_milliseconds(100));
     cur = 'k';
     prev = 'k';
     stored = 'k';
