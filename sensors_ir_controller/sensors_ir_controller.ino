@@ -12,5 +12,5 @@ void setup() {
 void loop() {
   isFalling = digitalRead(IRdPin);
   Serial.println(String(isFalling));
-  delay(1); 
+  delay(0.1); 
 }
