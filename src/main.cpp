@@ -44,7 +44,6 @@ std::string port_motors;
 // Configuration structure
 struct Configuration
 {
-    int SPEED;
     bool PROD;
     std::string SENSORS_PORT;
     std::string MOTORS_PORT;
@@ -100,10 +99,6 @@ bool loadConfiguration(const std::string &filename, Configuration &config)
         std::istringstream iss(line);
         if (counter == 0)
         {
-            iss >> config.SPEED;
-        }
-        if (counter == 1)
-        {
             try
             {
                 std::string value;
@@ -117,19 +112,19 @@ bool loadConfiguration(const std::string &filename, Configuration &config)
                 return false;
             }
         }
-        if (counter == 2)
+        if (counter == 1)
         {
             iss >> config.SENSORS_PORT;
         }
-        if (counter == 3)
+        if (counter == 2)
         {
             iss >> config.MOTORS_PORT;
         }
-        if (counter == 4)
+        if (counter == 3)
         {
             iss >> config.WIFI_PORT;
         }
-        if (counter == 5)
+        if (counter == 4)
         {
             try
             {
@@ -144,15 +139,15 @@ bool loadConfiguration(const std::string &filename, Configuration &config)
                 return false;
             }
         }
-        if (counter == 6)
+        if (counter == 5)
         {
             iss >> config.COMMANDER_FREQ;
         }
-        if (counter == 7)
+        if (counter == 6)
         {
             iss >> config.WIFI_FREQUENCY;
         }
-        if (counter == 8)
+        if (counter == 7)
         {
             iss >> config.SENSOR_FREQ;
         }
