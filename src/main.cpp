@@ -49,6 +49,9 @@ struct Configuration
     std::string MOTORS_PORT;
     int WIFI_PORT;
     bool IS_CARPET;
+    int COMMANDER_FREQ;
+    int WIFI_FREQUENCY;
+    int SENSOR_FREQ;
     // Add more parameters as needed
 };
 std::pair<int, int> key_to_speeds(char key, int speed)
@@ -139,6 +142,18 @@ bool loadConfiguration(const std::string &filename, Configuration &config)
                 std::cerr << e.what() << std::endl;
                 return false;
             }
+        }
+        if (counter == 6)
+        {
+            iss >> config.COMMANDER_FREQ;
+        }
+        if (counter == 7)
+        {
+            iss >> config.WIFI_FREQUENCY;
+        }
+        if (counter == 8)
+        {
+            iss >> config.SENSOR_FREQ;
         }
         // If you have more parameters, parse them here as well
 
@@ -299,9 +314,9 @@ int main(int argc, char **argv)
         }
     }
     // std::thread ip1(input_thread, 1, "keyboard input", config.SPEED, config.SPEED_ROT, frequency_to_milliseconds(10));
-    std::thread wf1(wifi_thread, 1, "wifi input", config.WIFI_PORT, frequency_to_milliseconds(100));
-    std::thread cmd(commander, 2, "command thread", frequency_to_milliseconds(50));
-    std::thread th1(sensor_thread, 3, "sensor thread", frequency_to_milliseconds(100));
+    std::thread wf1(wifi_thread, 1, "wifi input", config.WIFI_PORT, frequency_to_milliseconds(config.WIFI_FREQUENCY));
+    std::thread cmd(commander, 2, "command thread", frequency_to_milliseconds(config.COMMANDER_FREQ));
+    std::thread th1(sensor_thread, 3, "sensor thread", frequency_to_milliseconds(config.SENSOR_FREQ));
 
     cur = 'k';
     prev = 'k';
