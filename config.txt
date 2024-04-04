@@ -1,5 +1,5 @@
 # SPEED
-100
+80
 # PROD
 1
 # SENSORS_PORT
