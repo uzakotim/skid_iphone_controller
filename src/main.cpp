@@ -250,7 +250,7 @@ void sensor_thread(const int &id, const std::string &name, const int &delay)
     while (!stop_threads)
     {
         // Read data from Arduino fstream
-        if (ser_sensors)
+        if (ser_sensors.peek() != EOF)
         {
             ser_sensors >> isFalling;
         }
