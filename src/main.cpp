@@ -155,8 +155,15 @@ void commander(const int &id, const std::string &name, const int &delay)
     {
         if (prod)
         {
-            std::pair<int, int> speeds = key_to_speeds(cur, speed);
-            on_press_vel(speeds.first, speeds.second, ser_motors);
+            if (isFalling)
+            {
+                on_press_vel(0, 0, ser_motors);
+            }
+            else
+            {
+                std::pair<int, int> speeds = key_to_speeds(cur, speed);
+                on_press_vel(speeds.first, speeds.second, ser_motors);
+            }
         }
         std::this_thread::sleep_for(std::chrono::milliseconds(delay));
     }
@@ -221,18 +228,16 @@ void wifi_thread(const int &id, const std::string &name, const int &port, const 
         msg_data msg = receive_message(sock, stop_threads, buffer, srcAddr, srcAddrLen);
         if (stop_threads == true)
             break;
-        if (!isFalling)
-        {
-            lock_cur.lock();
-            cur = msg.buffer[0];
-            speed = std::stoi(std::string(msg.buffer + 2, msg.numBytesReceived - 1));
-            prev = stored;
-            stored = cur;
-            lock_cur.unlock();
-            print_buffer(msg.buffer, msg.srcAddr, msg.numBytesReceived, cur, speed, lock);
-            // clear buffer
-            memset(buffer, 0, BUFFER_SIZE);
-        }
+        lock_cur.lock();
+        cur = msg.buffer[0];
+        speed = std::stoi(std::string(msg.buffer + 2, msg.numBytesReceived - 1));
+        prev = stored;
+        stored = cur;
+        lock_cur.unlock();
+        print_buffer(msg.buffer, msg.srcAddr, msg.numBytesReceived, cur, speed, lock);
+        // clear buffer
+        memset(buffer, 0, BUFFER_SIZE);
+
         std::this_thread::sleep_for(std::chrono::milliseconds(delay));
     }
     send_closing_message(id, name, lock);
