@@ -256,9 +256,9 @@ void sensor_thread(const int &id, const std::string &name, const int &delay)
         io_service io;
         serial_port ser_sensors(io, port_sensors);                 // Adjust port name as per your setup
         ser_sensors.set_option(serial_port_base::baud_rate(9600)); // Adjust baud rate as needed
+        std::atomic<char> c;
         while (!stop_threads)
         {
-            std::atomic<char> c;
             read(ser_sensors, buffer(&c, 1));
             isFalling = (c == '1');
             std::this_thread::sleep_for(std::chrono::milliseconds(delay));
