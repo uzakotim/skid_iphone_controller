@@ -249,17 +249,18 @@ void wifi_thread(const int &id, const std::string &name, const int &port, const 
 void sensor_thread(const int &id, const std::string &name, const int &delay)
 {
     init_function(id, name, lock);
-    io_service io;
 
     try
     {
-        serial_port ser_sensors(io, port_sensors); // Adjust port name as per your setup
-        // Set baud rate
-        ser_sensors.set_option(serial_port_base::baud_rate(9600)); // Adjust baud rate as needed
         while (!stop_threads)
         {
+            io_service io;
+            serial_port ser_sensors(io, port_sensors); // Adjust port name as per your setup
+            // Set baud rate
+            ser_sensors.set_option(serial_port_base::baud_rate(9600)); // Adjust baud rate as needed
             read(ser_sensors, buffer(&c, 1));
             std::this_thread::sleep_for(std::chrono::milliseconds(delay));
+            ser_sensors.close();
         }
     }
     catch (std::exception &e)
@@ -297,7 +298,7 @@ int main(int argc, char **argv)
     // std::thread ip1(input_thread, 1, "keyboard input", config.SPEED, config.SPEED_ROT, frequency_to_milliseconds(10));
     std::thread wf1(wifi_thread, 1, "wifi input", config.WIFI_PORT, frequency_to_milliseconds(100));
     std::thread cmd(commander, 2, "command thread", frequency_to_milliseconds(200));
-    std::thread th1(sensor_thread, 3, "sensor thread", frequency_to_milliseconds(200));
+    std::thread th1(sensor_thread, 3, "sensor thread", frequency_to_milliseconds(100));
 
     cur = 'k';
     prev = 'k';
