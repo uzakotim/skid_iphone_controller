@@ -41,8 +41,6 @@ std::string port_motors;
 struct Configuration
 {
     int SPEED;
-    float SPEED_ROT;
-    float SPEED_COEF;
     bool PROD;
     std::string SENSORS_PORT;
     std::string MOTORS_PORT;
@@ -99,14 +97,6 @@ bool loadConfiguration(const std::string &filename, Configuration &config)
         }
         if (counter == 1)
         {
-            iss >> config.SPEED_ROT;
-        }
-        if (counter == 2)
-        {
-            iss >> config.SPEED_COEF;
-        }
-        if (counter == 3)
-        {
             try
             {
                 std::string value;
@@ -120,19 +110,19 @@ bool loadConfiguration(const std::string &filename, Configuration &config)
                 return false;
             }
         }
-        if (counter == 4)
+        if (counter == 2)
         {
             iss >> config.SENSORS_PORT;
         }
-        if (counter == 5)
+        if (counter == 3)
         {
             iss >> config.MOTORS_PORT;
         }
-        if (counter == 6)
+        if (counter == 4)
         {
             iss >> config.WIFI_PORT;
         }
-        if (counter == 7)
+        if (counter == 5)
         {
             try
             {
@@ -156,7 +146,7 @@ bool loadConfiguration(const std::string &filename, Configuration &config)
     return true;
 }
 
-void commander(const int &id, const std::string &name, const int &speed_translation, const int &speed_rotation, const int &delay)
+void commander(const int &id, const std::string &name, const int &delay)
 {
     init_function(id, name, lock);
 
@@ -309,7 +299,7 @@ int main(int argc, char **argv)
 
     // std::thread ip1(input_thread, 1, "keyboard input", config.SPEED, config.SPEED_ROT, frequency_to_milliseconds(10));
     std::thread wf1(wifi_thread, 1, "wifi input", config.WIFI_PORT, frequency_to_milliseconds(100));
-    std::thread cmd(commander, 2, "command thread", config.SPEED, config.SPEED_ROT, frequency_to_milliseconds(100));
+    std::thread cmd(commander, 2, "command thread", frequency_to_milliseconds(100));
     std::thread th1(sensor_thread, 3, "sensor thread", frequency_to_milliseconds(10));
     cur = 'k';
     prev = 'k';
