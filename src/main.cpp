@@ -33,7 +33,7 @@ static std::atomic<bool> stop_threads;
 static std::atomic<bool> prod, is_carpet;
 unsigned char cur, prev, stored;
 int speed = 0;
-int isFalling = 0;
+char c;
 
 std::fstream ser_motors;
 
@@ -157,9 +157,9 @@ void commander(const int &id, const std::string &name, const int &delay)
     {
         if (prod)
         {
-            stop = isFalling;
-            if (stop == 1)
+            if (c == '1')
             {
+                std::cout << FRED("STOP") << std::endl;
                 on_press_vel(0, 0, ser_motors);
             }
             else
@@ -249,8 +249,8 @@ void wifi_thread(const int &id, const std::string &name, const int &port, const 
 void sensor_thread(const int &id, const std::string &name, const int &delay)
 {
     init_function(id, name, lock);
-
     io_service io;
+
     try
     {
         serial_port ser_sensors(io, port_sensors); // Adjust port name as per your setup
@@ -258,10 +258,7 @@ void sensor_thread(const int &id, const std::string &name, const int &delay)
         ser_sensors.set_option(serial_port_base::baud_rate(9600)); // Adjust baud rate as needed
         while (!stop_threads)
         {
-            // READ CHAR
-            char c;
             read(ser_sensors, buffer(&c, 1));
-            std::cout << c << std::endl;
             std::this_thread::sleep_for(std::chrono::milliseconds(delay));
         }
     }
@@ -299,8 +296,8 @@ int main(int argc, char **argv)
     }
     // std::thread ip1(input_thread, 1, "keyboard input", config.SPEED, config.SPEED_ROT, frequency_to_milliseconds(10));
     std::thread wf1(wifi_thread, 1, "wifi input", config.WIFI_PORT, frequency_to_milliseconds(100));
-    std::thread cmd(commander, 2, "command thread", frequency_to_milliseconds(100));
-    std::thread th1(sensor_thread, 3, "sensor thread", frequency_to_milliseconds(100));
+    std::thread cmd(commander, 2, "command thread", frequency_to_milliseconds(200));
+    std::thread th1(sensor_thread, 3, "sensor thread", frequency_to_milliseconds(200));
 
     cur = 'k';
     prev = 'k';
