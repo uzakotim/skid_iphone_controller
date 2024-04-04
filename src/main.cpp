@@ -29,6 +29,7 @@ using namespace boost::asio;
 
 std::mutex lock;
 std::mutex lock_cur;
+std::mutex lock_fal;
 static std::atomic<bool> stop_threads;
 static std::atomic<bool> prod, is_carpet;
 unsigned char cur, prev, stored;
@@ -152,12 +153,15 @@ bool loadConfiguration(const std::string &filename, Configuration &config)
 void commander(const int &id, const std::string &name, const int &delay)
 {
     init_function(id, name, lock);
-
+    int stop = 0;
     while (!stop_threads)
     {
         if (prod)
         {
-            if (isFalling)
+            lock_fal.lock();
+            stop = isFalling;
+            lock_fal.unlock();
+            if (stop == 1)
             {
                 on_press_vel(0, 0, ser_motors);
             }
@@ -225,9 +229,13 @@ void wifi_thread(const int &id, const std::string &name, const int &port, const 
     char *buffer = new char[BUFFER_SIZE];
     struct sockaddr_in srcAddr;
     socklen_t srcAddrLen = sizeof(srcAddr);
+    int stop = 0;
     while (!stop_threads)
     {
-        if (!isFalling)
+        lock_fal.lock();
+        stop = isFalling;
+        lock_fal.unlock();
+        if (stop == 0)
         {
             msg_data msg = receive_message(sock, stop_threads, buffer, srcAddr, srcAddrLen);
             if (stop_threads == true)
@@ -242,6 +250,7 @@ void wifi_thread(const int &id, const std::string &name, const int &port, const 
             // clear buffer
             memset(buffer, 0, BUFFER_SIZE);
         }
+
         std::this_thread::sleep_for(std::chrono::milliseconds(delay));
     }
     send_closing_message(id, name, lock);
@@ -260,8 +269,9 @@ void sensor_thread(const int &id, const std::string &name, const int &delay)
             // READ CHAR
             char c;
             read(ser_sensors, buffer(&c, 1));
+            lock_fal.lock();
             isFalling = c == '1';
-
+            lock_fal.unlock();
             if (isFalling)
             {
                 lock_cur.lock();
