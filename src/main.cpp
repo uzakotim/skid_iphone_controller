@@ -169,6 +169,7 @@ void commander(const int &id, const std::string &name, const int &delay)
 {
     init_function(id, name, lock);
     int stop = 0;
+    size_t counter = 0;
     while (!stop_threads)
     {
         if (prod)
@@ -176,14 +177,20 @@ void commander(const int &id, const std::string &name, const int &delay)
             lock_fal.lock();
             if (isFalling)
             {
+                counter = 0;
                 std::cout << FRED("FALLING") << std::endl;
                 on_press_vel(0, 0, ser_motors);
             }
             else
             {
                 std::cout << FGRN("SAFE") << std::endl;
-                std::pair<int, int> speeds = key_to_speeds(cur, speed);
-                on_press_vel(speeds.first, speeds.second, ser_motors);
+                counter++;
+                if (counter > 10)
+                {
+                    std::pair<int, int> speeds = key_to_speeds(cur, speed);
+                    on_press_vel(speeds.first, speeds.second, ser_motors);
+                    counter--;
+                }
             }
             lock_fal.unlock();
         }
