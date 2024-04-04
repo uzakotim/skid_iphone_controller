@@ -25,6 +25,8 @@
 #include "../include/node/functions.h"
 #include "../include/node/kalman.h"
 
+using namespace boost::asio;
+
 std::mutex lock;
 std::mutex lock_cur;
 static std::atomic<bool> stop_threads;
@@ -34,10 +36,10 @@ int speed = 0;
 int isFalling = 0;
 
 std::fstream ser_motors;
-std::fstream ser_sensors;
 
 std::string port_sensors;
 std::string port_motors;
+
 // Configuration structure
 struct Configuration
 {
@@ -247,30 +249,36 @@ void sensor_thread(const int &id, const std::string &name, const int &delay)
 {
     init_function(id, name, lock);
 
-    while (!stop_threads)
+    io_service io;
+    try
     {
-        // Read data from Arduino fstream
-        if (ser_sensors)
+        serial_port ser_sensors(io, port_sensors); // Adjust port name as per your setup
+        while (!stop_threads)
         {
-            ser_sensors >> isFalling;
-            ser_sensors.flush();
+            // READ CHAR
+            char c;
+            read(ser_sensors, buffer(&c, 1));
+            isFalling = c == '1';
+
+            if (isFalling)
+            {
+                lock_cur.lock();
+                cur = 'k';
+                speed = 0;
+                prev = stored;
+                stored = cur;
+                lock_cur.unlock();
+                std::cout << FRED("Falling!\n");
+            }
+            std::this_thread::sleep_for(std::chrono::milliseconds(delay));
         }
-        else
-        {
-            std::cout << "No data available from Arduino\n";
-        }
-        if (isFalling)
-        {
-            lock_cur.lock();
-            cur = 'k';
-            speed = 0;
-            prev = stored;
-            stored = cur;
-            lock_cur.unlock();
-            std::cout << FRED("Falling!\n");
-        }
-        std::this_thread::sleep_for(std::chrono::milliseconds(delay));
     }
+    catch (std::exception &e)
+    {
+        // Check if ser_sensors is open
+        std::cout << FRED("Error: Could not open serial port: ") << FYEL(<< port_sensors <<) << FRED("") << std::endl;
+    }
+    stop_threads = true;
     send_closing_message(id, name, lock);
     return;
 }
@@ -291,23 +299,17 @@ int main(int argc, char **argv)
         port_sensors = config.SENSORS_PORT;
         port_motors = config.MOTORS_PORT;
         ser_motors = std::fstream(port_motors);
-        ser_sensors = std::fstream(port_sensors);
         // Check if ser_motors is open
         if (!ser_motors.is_open())
         {
             std::cout << FRED("Error: Could not open serial port: ") << FYEL(<< port_motors <<) << FRED("") << std::endl;
         }
-        // Check if ser_sensors is open
-        if (!ser_sensors.is_open())
-        {
-            std::cout << FRED("Error: Could not open serial port: ") << FYEL(<< port_sensors <<) << FRED("") << std::endl;
-        }
     }
-
     // std::thread ip1(input_thread, 1, "keyboard input", config.SPEED, config.SPEED_ROT, frequency_to_milliseconds(10));
     std::thread wf1(wifi_thread, 1, "wifi input", config.WIFI_PORT, frequency_to_milliseconds(100));
     std::thread cmd(commander, 2, "command thread", frequency_to_milliseconds(100));
-    std::thread th1(sensor_thread, 3, "sensor thread", frequency_to_milliseconds(100));
+    std::thread th1(sensor_thread, 3, "sensor thread", frequency_to_milliseconds(1000));
+
     cur = 'k';
     prev = 'k';
     stored = 'k';

@@ -23,6 +23,7 @@
 #ifndef NODE_LIBRARIES_H
 #define NODE_LIBRARIES_H
 #include <atomic>
+#include <boost/asio.hpp>
 #include <chrono>
 #include <ctime>
 #include <cmath>
