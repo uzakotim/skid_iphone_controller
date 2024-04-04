@@ -29,7 +29,6 @@ using namespace boost::asio;
 
 std::mutex lock;
 std::mutex lock_cur;
-std::mutex lock_fal;
 static std::atomic<bool> stop_threads;
 static std::atomic<bool> prod, is_carpet;
 unsigned char cur, prev, stored;
@@ -158,9 +157,7 @@ void commander(const int &id, const std::string &name, const int &delay)
     {
         if (prod)
         {
-            lock_fal.lock();
             stop = isFalling;
-            lock_fal.unlock();
             if (stop == 1)
             {
                 on_press_vel(0, 0, ser_motors);
@@ -229,27 +226,20 @@ void wifi_thread(const int &id, const std::string &name, const int &port, const 
     char *buffer = new char[BUFFER_SIZE];
     struct sockaddr_in srcAddr;
     socklen_t srcAddrLen = sizeof(srcAddr);
-    int stop = 0;
     while (!stop_threads)
     {
-        lock_fal.lock();
-        stop = isFalling;
-        lock_fal.unlock();
-        if (stop == 0)
-        {
-            msg_data msg = receive_message(sock, stop_threads, buffer, srcAddr, srcAddrLen);
-            if (stop_threads == true)
-                break;
-            lock_cur.lock();
-            cur = msg.buffer[0];
-            speed = std::stoi(std::string(msg.buffer + 2, msg.numBytesReceived - 1));
-            prev = stored;
-            stored = cur;
-            lock_cur.unlock();
-            print_buffer(msg.buffer, msg.srcAddr, msg.numBytesReceived, cur, speed, lock);
-            // clear buffer
-            memset(buffer, 0, BUFFER_SIZE);
-        }
+        msg_data msg = receive_message(sock, stop_threads, buffer, srcAddr, srcAddrLen);
+        if (stop_threads == true)
+            break;
+        lock_cur.lock();
+        cur = msg.buffer[0];
+        speed = std::stoi(std::string(msg.buffer + 2, msg.numBytesReceived - 1));
+        prev = stored;
+        stored = cur;
+        lock_cur.unlock();
+        print_buffer(msg.buffer, msg.srcAddr, msg.numBytesReceived, cur, speed, lock);
+        // clear buffer
+        memset(buffer, 0, BUFFER_SIZE);
 
         std::this_thread::sleep_for(std::chrono::milliseconds(delay));
     }
@@ -269,19 +259,8 @@ void sensor_thread(const int &id, const std::string &name, const int &delay)
             // READ CHAR
             char c;
             read(ser_sensors, buffer(&c, 1));
-            lock_fal.lock();
             isFalling = c == '1';
-            lock_fal.unlock();
-            if (isFalling)
-            {
-                lock_cur.lock();
-                cur = 'k';
-                speed = 0;
-                prev = stored;
-                stored = cur;
-                lock_cur.unlock();
-                std::cout << FRED("Falling!\n");
-            }
+            std::cout << c << std::endl;
             std::this_thread::sleep_for(std::chrono::milliseconds(delay));
         }
     }
