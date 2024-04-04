@@ -34,7 +34,6 @@ static std::atomic<bool> prod, is_carpet;
 static std::atomic<bool> isFalling;
 unsigned char cur, prev, stored;
 int speed = 0;
-char c;
 
 std::fstream ser_motors;
 
@@ -259,7 +258,9 @@ void sensor_thread(const int &id, const std::string &name, const int &delay)
         ser_sensors.set_option(serial_port_base::baud_rate(9600)); // Adjust baud rate as needed
         while (!stop_threads)
         {
-            isFalling = (read(ser_sensors, buffer(&c, 1)) == '1');
+            std::atomic<char> c;
+            read(ser_sensors, buffer(&c, 1));
+            isFalling = (c == '1');
             std::this_thread::sleep_for(std::chrono::milliseconds(delay));
         }
         ser_sensors.close();
