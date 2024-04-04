@@ -31,6 +31,7 @@ std::mutex lock;
 std::mutex lock_cur;
 static std::atomic<bool> stop_threads;
 static std::atomic<bool> prod, is_carpet;
+static std::atomic<bool> isFalling;
 unsigned char cur, prev, stored;
 int speed = 0;
 char c;
@@ -157,13 +158,14 @@ void commander(const int &id, const std::string &name, const int &delay)
     {
         if (prod)
         {
-            if (c == '1')
+            if (isFalling)
             {
-                std::cout << FRED("STOP") << std::endl;
+                std::cout << FRED("FALLING") << std::endl;
                 on_press_vel(0, 0, ser_motors);
             }
             else
             {
+                std::cout << FGRN("SAFE") << std::endl;
                 std::pair<int, int> speeds = key_to_speeds(cur, speed);
                 on_press_vel(speeds.first, speeds.second, ser_motors);
             }
@@ -259,6 +261,7 @@ void sensor_thread(const int &id, const std::string &name, const int &delay)
             // Set baud rate
             ser_sensors.set_option(serial_port_base::baud_rate(9600)); // Adjust baud rate as needed
             read(ser_sensors, buffer(&c, 1));
+            isFalling = (c == '1');
             std::this_thread::sleep_for(std::chrono::milliseconds(delay));
             ser_sensors.close();
         }
@@ -280,6 +283,7 @@ int main(int argc, char **argv)
     std::cout << FGRN("Path: ") << FYEL(<< projectFolderPath <<) << std::endl;
 
     stop_threads = false;
+    isFalling = false;
     // Load configuration from file
     if (!loadConfiguration(projectFolderPath + "/config.txt", config))
         return 1;
