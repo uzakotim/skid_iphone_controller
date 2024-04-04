@@ -301,7 +301,7 @@ int main(int argc, char **argv)
     // std::thread ip1(input_thread, 1, "keyboard input", config.SPEED, config.SPEED_ROT, frequency_to_milliseconds(10));
     std::thread wf1(wifi_thread, 1, "wifi input", config.WIFI_PORT, frequency_to_milliseconds(100));
     std::thread cmd(commander, 2, "command thread", frequency_to_milliseconds(100));
-    std::thread th1(sensor_thread, 3, "sensor thread", frequency_to_milliseconds(100));
+    std::thread th1(sensor_thread, 3, "sensor thread", frequency_to_milliseconds(200));
     cur = 'k';
     prev = 'k';
     stored = 'k';
