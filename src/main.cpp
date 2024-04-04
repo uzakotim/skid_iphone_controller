@@ -29,6 +29,7 @@ using namespace boost::asio;
 
 std::mutex lock;
 std::mutex lock_cur;
+std::mutex lock_fal;
 static std::atomic<bool> stop_threads;
 static std::atomic<bool> prod, is_carpet;
 static std::atomic<bool> isFalling;
@@ -172,6 +173,7 @@ void commander(const int &id, const std::string &name, const int &delay)
     {
         if (prod)
         {
+            lock_fal.lock();
             if (isFalling)
             {
                 std::cout << FRED("FALLING") << std::endl;
@@ -183,6 +185,7 @@ void commander(const int &id, const std::string &name, const int &delay)
                 std::pair<int, int> speeds = key_to_speeds(cur, speed);
                 on_press_vel(speeds.first, speeds.second, ser_motors);
             }
+            lock_fal.unlock();
         }
         std::this_thread::sleep_for(std::chrono::milliseconds(delay));
     }
@@ -275,7 +278,9 @@ void sensor_thread(const int &id, const std::string &name, const int &delay)
         while (!stop_threads)
         {
             read(ser_sensors, buffer(&c, 1));
+            lock_fal.lock();
             isFalling = (c == '1');
+            lock_fal.unlock();
             std::this_thread::sleep_for(std::chrono::milliseconds(delay));
         }
         ser_sensors.close();
