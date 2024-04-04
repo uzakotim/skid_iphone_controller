@@ -250,9 +250,10 @@ void sensor_thread(const int &id, const std::string &name, const int &delay)
     while (!stop_threads)
     {
         // Read data from Arduino fstream
-        if (ser_sensors.peek() != EOF)
+        if (ser_sensors)
         {
             ser_sensors >> isFalling;
+            ser_sensors.flush();
         }
         else
         {
@@ -306,7 +307,7 @@ int main(int argc, char **argv)
     // std::thread ip1(input_thread, 1, "keyboard input", config.SPEED, config.SPEED_ROT, frequency_to_milliseconds(10));
     std::thread wf1(wifi_thread, 1, "wifi input", config.WIFI_PORT, frequency_to_milliseconds(100));
     std::thread cmd(commander, 2, "command thread", frequency_to_milliseconds(100));
-    std::thread th1(sensor_thread, 3, "sensor thread", frequency_to_milliseconds(200));
+    std::thread th1(sensor_thread, 3, "sensor thread", frequency_to_milliseconds(100));
     cur = 'k';
     prev = 'k';
     stored = 'k';
