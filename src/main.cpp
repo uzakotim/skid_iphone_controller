@@ -255,7 +255,7 @@ void sensor_thread(const int &id, const std::string &name, const int &delay)
     {
         serial_port ser_sensors(io, port_sensors); // Adjust port name as per your setup
         // Set baud rate
-        serial.set_option(serial_port_base::baud_rate(9600)); // Adjust baud rate as needed
+        ser_sensors.set_option(serial_port_base::baud_rate(9600)); // Adjust baud rate as needed
         while (!stop_threads)
         {
             // READ CHAR
