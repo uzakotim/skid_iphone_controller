@@ -4,7 +4,7 @@ After=network.target       # Specify any necessary dependencies
 
 [Service]
 Type=simple
-ExecStart=/home/git/skid_iphone_controller/build/run_me      # Path to your compiled C++ executable
+ExecStart=/home/featsion/git/skid_iphone_controller/build/run_me      # Path to your compiled C++ executable
 Restart=on-failure
 RestartSec=5s
 
