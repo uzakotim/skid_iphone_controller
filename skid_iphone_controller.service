@@ -6,7 +6,6 @@ After=network.target
 Type=simple
 ExecStart=/home/featsion/git/skid_iphone_controller/build/run_me
 Restart=on-failure
-RestartSec=5s
 User=featsion 
 WorkingDirectory=/home/featsion/git/skid_iphone_controller/build
 Environment=PATH=/usr/local/bin:/usr/bin:/bin  
