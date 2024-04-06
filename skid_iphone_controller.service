@@ -1,0 +1,12 @@
+[Unit]
+Description=Skid Car Controller C++ Application
+After=network.target       # Specify any necessary dependencies
+
+[Service]
+Type=simple
+ExecStart=/home/git/skid_iphone_controller/build/run_me      # Path to your compiled C++ executable
+Restart=on-failure
+RestartSec=5s
+
+[Install]
+WantedBy=multi-user.target    # Specify the target where this service should start
