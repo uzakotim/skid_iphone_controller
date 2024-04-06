@@ -173,12 +173,12 @@ void commander(const int &id, const std::string &name, const int &delay)
             if (isFalling)
             {
                 counter = 0;
-                std::cout << FRED("FALLING") << std::endl;
+                // std::cout << FRED("FALLING") << std::endl;
                 on_press_vel(0, 0, ser_motors);
             }
             else
             {
-                std::cout << FGRN("SAFE") << std::endl;
+                // std::cout << FGRN("SAFE") << std::endl;
                 counter++;
                 if (counter > 10)
                 {
